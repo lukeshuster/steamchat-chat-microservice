@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: serv-chat-ms
+spec:
+  selector:
+    app: chat-ms
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-ms
+spec:
+  selector:
+    matchLabels:
+      app: chat-ms
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chat-ms
+    spec:
+      containers:
+      - name: chat-ms
+        image: gcr.io/steamchat/chat-ms:latest
+        ports:
+        - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
